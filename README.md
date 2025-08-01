@@ -1,6 +1,6 @@
 # Spotify-like REST API
 
-A production-ready Spring Boot application implementing a simplified Spotify-like REST API following Domain-Driven Design (DDD) principles with a rich domain model.
+Spring Boot application implementing a simplified Spotify-like REST API following Domain-Driven Design (DDD) principles with a rich domain model.
 
 ## 🏗️ Architecture & Design Principles
 
