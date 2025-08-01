@@ -1,0 +1,376 @@
+# Spotify REST API - Jakarta Bean Validation Testing
+# =============================================================================
+#
+# This file tests the enhanced DTOs with Jakarta Bean Validation annotations.
+# It demonstrates automatic validation at the API boundary with structured
+# error responses for validation failures.
+#
+# 🚀 INSTRUCTIONS:
+# 1. Ensure the application is running: mvn spring-boot:run
+# 2. Press the green play button next to each request to test validation
+# 3. Valid requests should succeed with 201/200 responses
+# 4. Invalid requests should return 400 with detailed validation errors
+#
+# 🔍 VALIDATION FEATURES TESTED:
+# - @NotBlank: Fields cannot be null, empty, or whitespace-only
+# - @Size: String length constraints (max characters)
+# - @Positive: Numbers must be positive (> 0)
+# - @Min: Minimum value constraints
+# - @NotNull: Fields cannot be null
+#
+# =============================================================================
+
+### ✅ VALID REQUEST: Create Track with All Constraints Satisfied
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Bohemian Rhapsody",
+  "artist": "Queen",
+  "duration": 355
+}
+
+> {%
+  client.test("Valid track creation should succeed", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+    client.assert(response.body.title === "Bohemian Rhapsody", "Title should match");
+  });
+  client.global.set("validTrackId", response.body.id);
+%}
+
+### ❌ VALIDATION ERROR: Track with Blank Title
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "",
+  "artist": "Test Artist",
+  "duration": 300
+}
+
+> {%
+  client.test("Blank title should fail validation", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+    client.assert(response.body.error === "VALIDATION_ERROR", "Should be validation error");
+    client.assert(response.body.fieldErrors.length > 0, "Should have field errors");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Track with Whitespace-Only Title
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "   ",
+  "artist": "Test Artist",
+  "duration": 300
+}
+
+> {%
+  client.test("Whitespace-only title should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Track Title Too Long (>100 characters)
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "This is an extremely long track title that exceeds the maximum allowed length of 100 characters for validation testing purposes",
+  "artist": "Test Artist", 
+  "duration": 300
+}
+
+> {%
+  client.test("Title too long should fail validation", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Track with Negative Duration
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Test Track",
+  "artist": "Test Artist",
+  "duration": -100
+}
+
+> {%
+  client.test("Negative duration should fail validation", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Track with Zero Duration
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Test Track",
+  "artist": "Test Artist", 
+  "duration": 0
+}
+
+> {%
+  client.test("Zero duration should fail validation", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Track with Missing Fields
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Test Track"
+}
+
+> {%
+  client.test("Missing fields should fail validation", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ✅ VALID REQUEST: Create Playlist with All Constraints Satisfied
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Rock Classics",
+  "isPublic": true
+}
+
+> {%
+  client.test("Valid playlist creation should succeed", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+    client.assert(response.body.name === "Rock Classics", "Name should match");
+  });
+  client.global.set("validPlaylistId", response.body.id);
+%}
+
+### ❌ VALIDATION ERROR: Playlist with Blank Name
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "",
+  "isPublic": true
+}
+
+> {%
+  client.test("Blank playlist name should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Playlist Name Too Long (>150 characters)
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "This is an extremely long playlist name that exceeds the maximum allowed length of 150 characters for validation testing purposes and should trigger a validation error",
+  "isPublic": true
+}
+
+> {%
+  client.test("Playlist name too long should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Playlist with Missing isPublic Field
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Test Playlist"
+}
+
+> {%
+  client.test("Missing isPublic should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Playlist with Null isPublic Field
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Test Playlist",
+  "isPublic": null
+}
+
+> {%
+  client.test("Null isPublic should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ✅ VALID REQUEST: Add Track to Playlist
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{validTrackId}}"
+}
+
+> {%
+  client.test("Valid track addition should succeed", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Add Track with Blank trackId
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": ""
+}
+
+> {%
+  client.test("Blank trackId should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Add Track with Missing trackId
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks
+Content-Type: application/json
+
+{}
+
+> {%
+  client.test("Missing trackId should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ✅ VALID REQUEST: Add Track at Valid Position
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{validTrackId}}",
+  "position": 0
+}
+
+> {%
+  client.test("Valid position should succeed", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Add Track at Negative Position
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{validTrackId}}",
+  "position": -1
+}
+
+> {%
+  client.test("Negative position should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Add Track with Missing Position
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{validTrackId}}"
+}
+
+> {%
+  client.test("Missing position should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Add Track with Null Position
+POST http://localhost:8080/playlists/{{validPlaylistId}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{validTrackId}}",
+  "position": null
+}
+
+> {%
+  client.test("Null position should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+  });
+%}
+
+### ✅ VALID REQUEST: Update Track with Valid Data
+PUT http://localhost:8080/tracks/{{validTrackId}}
+Content-Type: application/json
+
+{
+  "title": "Bohemian Rhapsody (Remastered)",
+  "artist": "Queen",
+  "duration": 355
+}
+
+> {%
+  client.test("Valid track update should succeed", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+%}
+
+### ❌ VALIDATION ERROR: Update Track with Invalid Data
+PUT http://localhost:8080/tracks/{{validTrackId}}
+Content-Type: application/json
+
+{
+  "title": "",
+  "artist": "Queen",
+  "duration": -355
+}
+
+> {%
+  client.test("Invalid track update should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+    client.assert(response.body.fieldErrors.length >= 2, "Should have multiple field errors");
+  });
+%}
+
+### ✅ FINAL TEST: Verify Validation Error Response Structure
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "",
+  "artist": "",
+  "duration": -1
+}
+
+> {%
+  client.test("Validation error response structure", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request");
+    client.assert(response.body.timestamp !== undefined, "Should have timestamp");
+    client.assert(response.body.status === 400, "Should have status code");
+    client.assert(response.body.error === "VALIDATION_ERROR", "Should have error type");
+    client.assert(response.body.message === "Request validation failed", "Should have message");
+    client.assert(Array.isArray(response.body.fieldErrors), "Should have field errors array");
+    client.assert(response.body.fieldErrors.length === 3, "Should have 3 field errors");
+    
+    // Verify field error structure
+    const fieldError = response.body.fieldErrors[0];
+    client.assert(fieldError.field !== undefined, "Field error should have field name");
+    client.assert(fieldError.message !== undefined, "Field error should have message");
+    client.assert(fieldError.rejectedValue !== undefined, "Field error should have rejected value");
+  });
+  client.log("=== JAKARTA BEAN VALIDATION TESTING COMPLETED ===");
+  client.log("✅ Verified automatic validation at API boundary");
+  client.log("✅ Tested all validation annotations: @NotBlank, @Size, @Positive, @Min, @NotNull");
+  client.log("✅ Confirmed structured validation error responses");
+  client.log("✅ Validated integration with Spring Boot validation framework");
+%}

@@ -1,0 +1,247 @@
+@startuml Spotify-API-Architecture-With-DTOs
+
+!define ENTITY_COLOR #E1F5FE
+!define CONTROLLER_COLOR #F3E5F5
+!define SERVICE_COLOR #E8F5E8
+!define REPOSITORY_COLOR #FFF3E0
+!define EXCEPTION_COLOR #FFEBEE
+!define DTO_COLOR #E8F8F5
+
+package "com.spotify" {
+    
+    package "dto" <<DTO_COLOR>> {
+        class CreateTrackRequest <<record>> {
+            +title: String
+            +artist: String
+            +duration: Integer
+            +CreateTrackRequest(String, String, Integer)
+        }
+        
+        class UpdateTrackRequest <<record>> {
+            +title: String
+            +artist: String
+            +duration: Integer
+            +UpdateTrackRequest(String, String, Integer)
+        }
+        
+        class CreatePlaylistRequest <<record>> {
+            +name: String
+            +isPublic: Boolean
+            +CreatePlaylistRequest(String, Boolean)
+        }
+        
+        class UpdatePlaylistRequest <<record>> {
+            +name: String
+            +isPublic: Boolean
+            +UpdatePlaylistRequest(String, Boolean)
+        }
+        
+        class AddTrackToPlaylistRequest <<record>> {
+            +trackId: String
+            +AddTrackToPlaylistRequest(String)
+        }
+        
+        class AddTrackAtPositionRequest <<record>> {
+            +trackId: String
+            +position: Integer
+            +AddTrackAtPositionRequest(String, Integer)
+        }
+    }
+    
+    package "controllers" <<CONTROLLER_COLOR>> {
+        class TrackController {
+            -trackService: TrackService
+            +getAllTracks(): ResponseEntity<List<Track>>
+            +getTrackById(id: String): ResponseEntity<Track>
+            +createTrack(request: CreateTrackRequest): ResponseEntity<Track>
+            +updateTrack(id: String, request: UpdateTrackRequest): ResponseEntity<Track>
+            +deleteTrack(id: String): ResponseEntity<Void>
+        }
+        
+        class PlaylistController {
+            -playlistService: PlaylistService
+            +getAllPlaylists(): ResponseEntity<List<Playlist>>
+            +getPlaylistById(id: String): ResponseEntity<Playlist>
+            +createPlaylist(request: CreatePlaylistRequest): ResponseEntity<Playlist>
+            +updatePlaylist(id: String, request: UpdatePlaylistRequest): ResponseEntity<Playlist>
+            +deletePlaylist(id: String): ResponseEntity<Void>
+            +getPlaylistTracks(playlistId: String): ResponseEntity<List<Track>>
+            +addTrackToPlaylist(playlistId: String, request: AddTrackToPlaylistRequest): ResponseEntity<Playlist>
+            +addTrackAtPosition(playlistId: String, request: AddTrackAtPositionRequest): ResponseEntity<Playlist>
+        }
+        
+        class GlobalExceptionHandler {
+            +handleTrackNotFoundException(ex: TrackNotFoundException): ResponseEntity<Map>
+            +handlePlaylistNotFoundException(ex: PlaylistNotFoundException): ResponseEntity<Map>
+            +handleInvalidTrackPositionException(ex: InvalidTrackPositionException): ResponseEntity<Map>
+            +handleDomainException(ex: DomainException): ResponseEntity<Map>
+            +handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<Map>
+            +handleGeneralException(ex: Exception): ResponseEntity<Map>
+            -createErrorResponse(message: String, errorType: String, status: HttpStatus): ResponseEntity<Map>
+        }
+    }
+    
+    package "services" <<SERVICE_COLOR>> {
+        class TrackService {
+            -trackRepository: TrackRepository
+            +createTrack(title: String, artist: String, duration: Integer): Track
+            +getAllTracks(): List<Track>
+            +getTrackById(id: String): Track
+            +updateTrack(id: String, title: String, artist: String, duration: Integer): Track
+            +deleteTrack(id: String): void
+        }
+        
+        class PlaylistService {
+            -playlistRepository: PlaylistRepository
+            -trackService: TrackService
+            +createPlaylist(name: String, isPublic: Boolean): Playlist
+            +getAllPlaylists(): List<Playlist>
+            +getPlaylistById(id: String): Playlist
+            +updatePlaylist(id: String, name: String, isPublic: Boolean): Playlist
+            +deletePlaylist(id: String): void
+            +addTrackToPlaylist(playlistId: String, trackId: String): Playlist
+            +addTrackAtPosition(playlistId: String, trackId: String, position: int): Playlist
+            +getPlaylistTracks(playlistId: String): List<Track>
+        }
+    }
+    
+    package "repositories" <<REPOSITORY_COLOR>> {
+        interface TrackRepository {
+            <<Spring Data JPA>>
+            +save(track: Track): Track
+            +findById(id: String): Optional<Track>
+            +findAll(): List<Track>
+            +delete(track: Track): void
+        }
+        
+        interface PlaylistRepository {
+            <<Spring Data JPA>>
+            +save(playlist: Playlist): Playlist
+            +findById(id: String): Optional<Playlist>
+            +findAll(): List<Playlist>
+            +delete(playlist: Playlist): void
+        }
+    }
+    
+    package "domain.entities" <<ENTITY_COLOR>> {
+        class Track {
+            -id: String <<UUID>>
+            -title: String
+            -artist: String
+            -duration: Integer
+            -createdAt: LocalDateTime
+            
+            +Track(title: String, artist: String, duration: Integer)
+            #onCreate(): void <<@PrePersist>>
+            +getId(): String
+            +getTitle(): String
+            +getArtist(): String
+            +getDuration(): Integer
+            +getCreatedAt(): LocalDateTime
+            +setTitle(title: String): void
+            +setArtist(artist: String): void
+            +setDuration(duration: Integer): void
+        }
+        
+        class Playlist {
+            <<Rich Domain Entity>>
+            -id: String <<UUID>>
+            -name: String
+            -isPublic: Boolean
+            -createdAt: LocalDateTime
+            -tracks: List<Track> <<@OrderColumn>>
+            
+            +Playlist(name: String, isPublic: Boolean)
+            #onCreate(): void <<@PrePersist>>
+            
+            <<Domain Methods - Business Logic>>
+            +addTrack(track: Track): void
+            +addTrackAtPosition(track: Track, position: int): void
+            +removeTrack(track: Track): boolean
+            +getTotalDuration(): int
+            +getTrackCount(): int
+            
+            +getId(): String
+            +getName(): String
+            +getIsPublic(): Boolean
+            +getCreatedAt(): LocalDateTime
+            +getTracks(): List<Track>
+            +setName(name: String): void
+            +setIsPublic(isPublic: Boolean): void
+        }
+    }
+    
+    package "domain.exceptions" <<EXCEPTION_COLOR>> {
+        class DomainException {
+            +DomainException(message: String)
+            +DomainException(message: String, cause: Throwable)
+        }
+        
+        class TrackNotFoundException {
+            +TrackNotFoundException(trackId: String)
+        }
+        
+        class PlaylistNotFoundException {
+            +PlaylistNotFoundException(playlistId: String)
+        }
+        
+        class InvalidTrackPositionException {
+            +InvalidTrackPositionException(position: int, maxPosition: int)
+            +InvalidTrackPositionException(message: String)
+        }
+    }
+    
+    class SpotifyApiApplication {
+        +main(args: String[]): void
+    }
+}
+
+' Controller to DTO relationships
+TrackController --> CreateTrackRequest : uses
+TrackController --> UpdateTrackRequest : uses
+PlaylistController --> CreatePlaylistRequest : uses
+PlaylistController --> UpdatePlaylistRequest : uses
+PlaylistController --> AddTrackToPlaylistRequest : uses
+PlaylistController --> AddTrackAtPositionRequest : uses
+
+' Service relationships
+TrackController --> TrackService : uses
+PlaylistController --> PlaylistService : uses
+TrackService --> TrackRepository : uses
+PlaylistService --> PlaylistRepository : uses
+PlaylistService --> TrackService : uses
+
+' Repository relationships
+TrackRepository --> Track : manages
+PlaylistRepository --> Playlist : manages
+
+' Domain relationships
+Playlist --> Track : contains *
+Playlist --> InvalidTrackPositionException : throws
+
+' Exception hierarchy
+TrackNotFoundException --> DomainException : extends
+PlaylistNotFoundException --> DomainException : extends
+InvalidTrackPositionException --> DomainException : extends
+
+' Exception handling
+GlobalExceptionHandler --> TrackNotFoundException : handles
+GlobalExceptionHandler --> PlaylistNotFoundException : handles
+GlobalExceptionHandler --> InvalidTrackPositionException : handles
+GlobalExceptionHandler --> DomainException : handles
+
+note top of CreateTrackRequest : Java 21 Records\nType-safe DTOs replace\nMap<String, Object>\nwith compile-time validation
+
+note top of Playlist : Rich Domain Entity\nNOT an Anemic Model\nEncapsulates business logic\nfor track management
+
+note top of Track : Application-generated UUID IDs\nPrepared for microservices\narchitecture
+
+note top of DomainException : Base exception for all\ndomain-specific errors
+
+note top of TrackService : Thin Application Service\nDelegates to domain entities
+
+note top of PlaylistService : Thin Application Service\nDelegates to rich domain model
+
+note bottom of dto : Type-Safe Request Models\nEliminate unsafe casting\nProvide compile-time validation\nImprove API documentation
+
+@enduml

@@ -1,0 +1,469 @@
+# Spotify-like REST API - Automated End-to-End Flow Test
+# =============================================================================
+# 
+# This file demonstrates a complete workflow using IntelliJ IDEA's HTTP client
+# with dynamic variable extraction and sequential execution.
+#
+# 🚀 INSTRUCTIONS:
+# 1. Ensure the Spring Boot application is running: mvn spring-boot:run
+# 2. Ensure MySQL is running: docker-compose up -d
+# 3. Press the green 'Run All' button at the top to execute the entire flow
+# 4. Variables are automatically extracted and reused between requests
+#
+# 📋 WORKFLOW OVERVIEW:
+# - Create multiple tracks with different genres
+# - Verify track creation by retrieving all tracks
+# - Create playlists (public and private)
+# - Add tracks to playlists using different methods
+# - Test playlist track management with positioning
+# - Update playlist metadata
+# - Test error scenarios and validation
+# - Clean up resources
+#
+# 🔧 FEATURES:
+# - Dynamic variable extraction using client.global.set()
+# - Automatic ID reuse across requests
+# - Type-safe DTO validation testing
+# - Complete CRUD operation coverage
+# - Error handling demonstration
+#
+# =============================================================================
+
+### Step 1: Create Track #1 - Queen
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Bohemian Rhapsody",
+  "artist": "Queen",
+  "duration": 355
+}
+
+> {%
+  client.test("Track created successfully", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+    client.assert(response.body.id !== null, "Track ID should not be null");
+  });
+  client.global.set("trackId1", response.body.id);
+  client.log("Created Track #1: " + response.body.title + " (ID: " + response.body.id + ")");
+%}
+
+### Step 2: Create Track #2 - Led Zeppelin
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Stairway to Heaven",
+  "artist": "Led Zeppelin", 
+  "duration": 482
+}
+
+> {%
+  client.test("Track created successfully", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+  });
+  client.global.set("trackId2", response.body.id);
+  client.log("Created Track #2: " + response.body.title + " (ID: " + response.body.id + ")");
+%}
+
+### Step 3: Create Track #3 - Pink Floyd
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Comfortably Numb",
+  "artist": "Pink Floyd",
+  "duration": 382
+}
+
+> {%
+  client.test("Track created successfully", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+  });
+  client.global.set("trackId3", response.body.id);
+  client.log("Created Track #3: " + response.body.title + " (ID: " + response.body.id + ")");
+%}
+
+### Step 4: Create Track #4 - The Beatles
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Hey Jude",
+  "artist": "The Beatles",
+  "duration": 431
+}
+
+> {%
+  client.test("Track created successfully", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+  });
+  client.global.set("trackId4", response.body.id);
+  client.log("Created Track #4: " + response.body.title + " (ID: " + response.body.id + ")");
+%}
+
+### Step 5: Verify All Tracks Created
+GET http://localhost:8080/tracks
+
+> {%
+  client.test("All tracks retrieved", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.length >= 4, "Should have at least 4 tracks");
+  });
+  client.log("Total tracks in system: " + response.body.length);
+%}
+
+### Step 6: Create Public Playlist - Rock Legends
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Rock Legends",
+  "isPublic": true
+}
+
+> {%
+  client.test("Playlist created successfully", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+    client.assert(response.body.isPublic === true, "Playlist should be public");
+  });
+  client.global.set("playlistId1", response.body.id);
+  client.log("Created Playlist #1: " + response.body.name + " (ID: " + response.body.id + ")");
+%}
+
+### Step 7: Create Private Playlist - My Favorites
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "My Private Collection",
+  "isPublic": false
+}
+
+> {%
+  client.test("Private playlist created", function() {
+    client.assert(response.status === 201, "Expected 201 Created");
+    client.assert(response.body.isPublic === false, "Playlist should be private");
+  });
+  client.global.set("playlistId2", response.body.id);
+  client.log("Created Playlist #2: " + response.body.name + " (ID: " + response.body.id + ")");
+%}
+
+### Step 8: Add Track #1 (Queen) to Rock Legends Playlist
+POST http://localhost:8080/playlists/{{playlistId1}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId1}}"
+}
+
+> {%
+  client.test("Track added to playlist", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Added Bohemian Rhapsody to Rock Legends playlist");
+%}
+
+### Step 9: Add Track #2 (Led Zeppelin) to Rock Legends Playlist  
+POST http://localhost:8080/playlists/{{playlistId1}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId2}}"
+}
+
+> {%
+  client.test("Track added to playlist", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Added Stairway to Heaven to Rock Legends playlist");
+%}
+
+### Step 10: Insert Track #3 (Pink Floyd) at Position 0 (Beginning)
+POST http://localhost:8080/playlists/{{playlistId1}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId3}}",
+  "position": 0
+}
+
+> {%
+  client.test("Track inserted at position", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Inserted Comfortably Numb at position 0 in Rock Legends playlist");
+%}
+
+### Step 11: Insert Track #4 (The Beatles) at Position 2 (Middle)
+POST http://localhost:8080/playlists/{{playlistId1}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId4}}",
+  "position": 2
+}
+
+> {%
+  client.test("Track inserted at middle position", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Inserted Hey Jude at position 2 in Rock Legends playlist");
+%}
+
+### Step 12: Verify Rock Legends Playlist Content and Order
+GET http://localhost:8080/playlists/{{playlistId1}}/tracks
+
+> {%
+  client.test("Playlist tracks retrieved with correct order", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.length === 4, "Playlist should have 4 tracks");
+    // Verify order: Pink Floyd (pos 0), Queen (pos 1), Beatles (pos 2), Led Zeppelin (pos 3)
+    client.assert(response.body[0].artist === "Pink Floyd", "First track should be Pink Floyd");
+    client.assert(response.body[1].artist === "Queen", "Second track should be Queen");
+    client.assert(response.body[2].artist === "The Beatles", "Third track should be The Beatles");
+    client.assert(response.body[3].artist === "Led Zeppelin", "Fourth track should be Led Zeppelin");
+  });
+  client.log("Verified playlist order: " + response.body.map(t => t.artist).join(" → "));
+%}
+
+### Step 13: Get Full Playlist Details
+GET http://localhost:8080/playlists/{{playlistId1}}
+
+> {%
+  client.test("Full playlist details retrieved", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.name === "Rock Legends", "Playlist name should match");
+  });
+  client.log("Playlist details: " + response.body.name + " (" + response.body.tracks.length + " tracks)");
+%}
+
+### Step 14: Update Rock Legends Playlist Name and Visibility
+PUT http://localhost:8080/playlists/{{playlistId1}}
+Content-Type: application/json
+
+{
+  "name": "Ultimate Rock Legends Collection",
+  "isPublic": true
+}
+
+> {%
+  client.test("Playlist updated successfully", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.name === "Ultimate Rock Legends Collection", "Name should be updated");
+  });
+  client.log("Updated playlist name to: " + response.body.name);
+%}
+
+### Step 15: Add Multiple Tracks to Private Playlist
+POST http://localhost:8080/playlists/{{playlistId2}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId1}}"
+}
+
+> {%
+  client.test("Track added to private playlist", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Added track to private playlist");
+%}
+
+### Step 16: Get All Playlists to Verify Updates
+GET http://localhost:8080/playlists
+
+> {%
+  client.test("All playlists retrieved", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.length >= 2, "Should have at least 2 playlists");
+  });
+  client.log("Total playlists in system: " + response.body.length);
+%}
+
+### Step 17: Test Individual Track Retrieval
+GET http://localhost:8080/tracks/{{trackId1}}
+
+> {%
+  client.test("Individual track retrieved", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.title === "Bohemian Rhapsody", "Track title should match");
+  });
+  client.log("Retrieved individual track: " + response.body.title + " by " + response.body.artist);
+%}
+
+### Step 18: Update Track Information
+PUT http://localhost:8080/tracks/{{trackId1}}
+Content-Type: application/json
+
+{
+  "title": "Bohemian Rhapsody (Remastered 2024)",
+  "artist": "Queen",
+  "duration": 355
+}
+
+> {%
+  client.test("Track updated successfully", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.title.includes("Remastered"), "Title should include Remastered");
+  });
+  client.log("Updated track title to: " + response.body.title);
+%}
+
+###############################################################################
+# ERROR TESTING SCENARIOS
+###############################################################################
+
+### Step 19: Test Invalid Track Creation (Empty Title)
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "",
+  "artist": "Test Artist",
+  "duration": 300
+}
+
+> {%
+  client.test("Invalid track creation should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request for empty title");
+  });
+  client.log("Correctly rejected empty title: " + response.status);
+%}
+
+### Step 20: Test Invalid Playlist Creation (Null Values)
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": null,
+  "isPublic": true
+}
+
+> {%
+  client.test("Invalid playlist creation should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request for null name");
+  });
+  client.log("Correctly rejected null playlist name: " + response.status);
+%}
+
+### Step 21: Test Invalid Position (Negative Number)
+POST http://localhost:8080/playlists/{{playlistId1}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId2}}",
+  "position": -1
+}
+
+> {%
+  client.test("Invalid position should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request for negative position");
+  });
+  client.log("Correctly rejected negative position: " + response.status);
+%}
+
+### Step 22: Test Invalid Position (Too High)
+POST http://localhost:8080/playlists/{{playlistId1}}/tracks/position
+Content-Type: application/json
+
+{
+  "trackId": "{{trackId2}}",
+  "position": 999
+}
+
+> {%
+  client.test("Invalid high position should fail", function() {
+    client.assert(response.status === 400, "Expected 400 Bad Request for position too high");
+  });
+  client.log("Correctly rejected position too high: " + response.status);
+%}
+
+### Step 23: Test Non-existent Track Access
+GET http://localhost:8080/tracks/non-existent-track-id
+
+> {%
+  client.test("Non-existent track should return 404", function() {
+    client.assert(response.status === 404, "Expected 404 Not Found");
+  });
+  client.log("Correctly returned 404 for non-existent track");
+%}
+
+### Step 24: Test Non-existent Playlist Access
+GET http://localhost:8080/playlists/non-existent-playlist-id
+
+> {%
+  client.test("Non-existent playlist should return 404", function() {
+    client.assert(response.status === 404, "Expected 404 Not Found");
+  });
+  client.log("Correctly returned 404 for non-existent playlist");
+%}
+
+###############################################################################
+# CLEANUP AND FINAL VERIFICATION
+###############################################################################
+
+### Step 25: Delete One Track and Verify Impact
+DELETE http://localhost:8080/tracks/{{trackId4}}
+
+> {%
+  client.test("Track deleted successfully", function() {
+    client.assert(response.status === 204, "Expected 204 No Content");
+  });
+  client.log("Successfully deleted track: Hey Jude");
+%}
+
+### Step 26: Verify Playlist After Track Deletion
+GET http://localhost:8080/playlists/{{playlistId1}}/tracks
+
+> {%
+  client.test("Playlist updated after track deletion", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    // Note: In a real system, you might want to handle orphaned references
+  });
+  client.log("Verified playlist state after track deletion");
+%}
+
+### Step 27: Get Final System State - All Tracks
+GET http://localhost:8080/tracks
+
+> {%
+  client.test("Final track count verification", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Final track count: " + response.body.length);
+%}
+
+### Step 28: Get Final System State - All Playlists
+GET http://localhost:8080/playlists
+
+> {%
+  client.test("Final playlist count verification", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("Final playlist count: " + response.body.length);
+%}
+
+### Step 29: Delete Test Playlist
+DELETE http://localhost:8080/playlists/{{playlistId2}}
+
+> {%
+  client.test("Playlist deleted successfully", function() {
+    client.assert(response.status === 204, "Expected 204 No Content");
+  });
+  client.log("Successfully deleted private playlist");
+%}
+
+### Step 30: Final Verification - Confirm Cleanup
+GET http://localhost:8080/playlists
+
+> {%
+  client.test("Cleanup verification", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+  client.log("=== FLOW COMPLETED SUCCESSFULLY ===");
+  client.log("Created tracks: 4 (1 deleted)");
+  client.log("Created playlists: 2 (1 deleted)");
+  client.log("Tested positioning, validation, and error handling");
+  client.log("All type-safe DTOs validated successfully");
+%}
