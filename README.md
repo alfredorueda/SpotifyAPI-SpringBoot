@@ -9,7 +9,7 @@ This application demonstrates:
 - **Domain-Driven Design (DDD)**: Rich domain entities with encapsulated business logic
 - **Application-Generated IDs**: UUID-based alphanumeric identifiers for microservices readiness
 - **REST API Best Practices**: Proper HTTP methods, status codes, and resource naming
-- **Type-Safe DTOs**: Java 21 records for request payloads instead of Map<String, Object>
+- **Type-Safe DTOs**: Java 21 records for request payloads
 - **Clean Architecture**: Thin service layer delegating to rich domain entities
 - **Constructor-Based Dependency Injection**: Following Spring Boot best practices
 
