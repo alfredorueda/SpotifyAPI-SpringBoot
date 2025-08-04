@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -104,6 +107,42 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
         return createErrorResponse(ex.getMessage(), "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handle HTTP method not supported exceptions (405 Method Not Allowed).
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return createErrorResponse(
+            "HTTP method '" + ex.getMethod() + "' is not supported for this endpoint", 
+            "METHOD_NOT_ALLOWED", 
+            HttpStatus.METHOD_NOT_ALLOWED
+        );
+    }
+
+    /**
+     * Handle unsupported media type exceptions (415 Unsupported Media Type).
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnsupportedMediaType(HttpMediaTypeNotSupportedException ex) {
+        return createErrorResponse(
+            "Content type '" + ex.getContentType() + "' is not supported", 
+            "UNSUPPORTED_MEDIA_TYPE", 
+            HttpStatus.UNSUPPORTED_MEDIA_TYPE
+        );
+    }
+
+    /**
+     * Handle malformed JSON and request body parsing errors (400 Bad Request).
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleMalformedJson(HttpMessageNotReadableException ex) {
+        return createErrorResponse(
+            "Malformed JSON request body", 
+            "MALFORMED_JSON", 
+            HttpStatus.BAD_REQUEST
+        );
     }
 
     /**

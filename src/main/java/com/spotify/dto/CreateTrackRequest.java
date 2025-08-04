@@ -3,6 +3,7 @@ package com.spotify.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * DTO record for creating a new track with Jakarta Bean Validation annotations.
@@ -30,6 +31,7 @@ public record CreateTrackRequest(
     @Size(max = 100, message = "Artist must be at most 100 characters")
     String artist,
     
+    @NotNull(message = "Duration must not be null")
     @Positive(message = "Duration must be a positive number in seconds")
     Integer duration
     
