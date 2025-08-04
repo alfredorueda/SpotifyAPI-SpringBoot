@@ -3,6 +3,7 @@ package com.spotify.services;
 import com.spotify.domain.entities.Playlist;
 import com.spotify.domain.entities.Track;
 import com.spotify.domain.exceptions.PlaylistNotFoundException;
+import com.spotify.dto.AddMultipleTracksRequest;
 import com.spotify.repositories.PlaylistRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,5 +112,24 @@ public class PlaylistService {
     public List<Track> getPlaylistTracks(String playlistId) {
         Playlist playlist = getPlaylistById(playlistId);
         return playlist.getTracks(); // Returns defensive copy
+    }
+
+    /**
+     * Add multiple tracks to a playlist at a specific position or at the end.
+     * Uses modern Java 21 Streams API for efficient track retrieval and collection.
+     * Delegates to the rich domain method in Playlist entity.
+     */
+    public Playlist addMultipleTracks(String playlistId, AddMultipleTracksRequest request) {
+        Playlist playlist = getPlaylistById(playlistId);
+        
+        // Use Java 21 Streams to efficiently map track IDs to Track domain objects
+        List<Track> tracks = request.trackIds().stream()
+                .map(trackService::getTrackById) // This will throw TrackNotFoundException if any track is not found
+                .toList();
+        
+        // Delegate to domain entity business logic that enforces position validation
+        playlist.addTracks(tracks, request.position());
+        
+        return playlistRepository.save(playlist);
     }
 }

@@ -2,6 +2,7 @@ package com.spotify.controllers;
 
 import com.spotify.domain.entities.Playlist;
 import com.spotify.domain.entities.Track;
+import com.spotify.dto.AddMultipleTracksRequest;
 import com.spotify.dto.AddTrackAtPositionRequest;
 import com.spotify.dto.AddTrackToPlaylistRequest;
 import com.spotify.dto.CreatePlaylistRequest;
@@ -161,6 +162,29 @@ public class PlaylistController {
         // Basic validation completed - trackId exists and position >= 0
         // Domain validation for position upper bounds handled by rich Playlist entity
         Playlist playlist = playlistService.addTrackAtPosition(playlistId, request.trackId(), request.position());
+        return ResponseEntity.ok(playlist);
+    }
+
+    /**
+     * POST /playlists/{playlistId}/tracks/multiple - Add multiple tracks to a playlist
+     * 
+     * ENHANCED WITH @Valid: Comprehensive validation for bulk track insertion
+     * - @Valid enforces trackIds list and position validation via annotations
+     * - @NotEmpty ensures trackIds list is provided and not empty
+     * - @Min(0) ensures position is non-negative (if provided)
+     * - Domain layer (Playlist entity) handles position upper bound validation
+     * - Automatic structured error response if validation fails
+     * 
+     * Returns 200 OK with the updated playlist
+     * Throws InvalidTrackPositionException if position exceeds playlist bounds (handled by GlobalExceptionHandler)
+     * Throws TrackNotFoundException if any track ID is not found (handled by GlobalExceptionHandler)
+     */
+    @PostMapping("/{playlistId}/tracks/multiple")
+    public ResponseEntity<Playlist> addMultipleTracks(@PathVariable String playlistId, 
+                                                      @Valid @RequestBody AddMultipleTracksRequest request) {
+        // Basic validation completed - trackIds list exists and position >= 0 (if provided)
+        // Domain validation for position upper bounds and track existence handled by service and domain layers
+        Playlist playlist = playlistService.addMultipleTracks(playlistId, request);
         return ResponseEntity.ok(playlist);
     }
 }

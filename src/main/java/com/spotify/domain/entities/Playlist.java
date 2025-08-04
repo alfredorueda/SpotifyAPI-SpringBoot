@@ -131,6 +131,51 @@ public class Playlist {
     }
 
     /**
+     * DOMAIN METHOD: Add multiple tracks at a specific position in the playlist.
+     * 
+     * This method demonstrates rich domain behavior by:
+     * - Validating business rules (position constraints for bulk operations)
+     * - Throwing domain-specific exceptions when invariants are violated
+     * - Maintaining the integrity of the track ordering for multiple insertions
+     * - Using modern Java 21 features for clean implementation
+     * 
+     * @param tracks The list of tracks to add
+     * @param position The position where to insert the tracks (0-based), or null to append at end
+     * @throws InvalidTrackPositionException if the position is invalid
+     */
+    public void addTracks(List<Track> tracks, Integer position) {
+        if (tracks == null || tracks.isEmpty()) {
+            throw new IllegalArgumentException("Tracks list cannot be null or empty");
+        }
+        
+        // If position is null, append at the end
+        if (position == null) {
+            tracks.stream()
+                   .filter(track -> track != null && !this.tracks.contains(track))
+                   .forEach(this.tracks::add);
+            return;
+        }
+        
+        // Domain invariant: position must be valid for insertion
+        if (position < 0 || position > this.tracks.size()) {
+            throw new InvalidTrackPositionException(position, this.tracks.size());
+        }
+        
+        // Insert tracks at the specified position, maintaining order
+        // Filter out nulls and duplicates, then insert in sequence
+        List<Track> validTracks = tracks.stream()
+                                       .filter(track -> track != null && !this.tracks.contains(track))
+                                       .toList();
+        
+        // Insert tracks one by one at the position, incrementing position for each
+        int currentPosition = position;
+        for (Track track : validTracks) {
+            this.tracks.add(currentPosition, track);
+            currentPosition++;
+        }
+    }
+
+    /**
      * DOMAIN METHOD: Remove a track from the playlist.
      * Encapsulates the business logic for track removal.
      */
