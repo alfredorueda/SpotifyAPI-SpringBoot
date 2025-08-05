@@ -207,4 +207,113 @@ class PlaylistControllerSimpleIntegrationTest {
             .then()
                 .statusCode(404);
     }
+
+    @Test
+    void shouldAddMultipleTracksToPlaylist() {
+        // First, create a playlist
+        String playlistId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "name": "My Mix Playlist",
+                        "isPublic": true
+                    }
+                    """)
+            .when()
+                .post("/playlists")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Create multiple tracks to add to the playlist
+        String track1Id = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Hotel California",
+                        "artist": "Eagles",
+                        "duration": 391
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        String track2Id = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Stairway to Heaven",
+                        "artist": "Led Zeppelin",
+                        "duration": 482
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        String track3Id = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Sweet Child O' Mine",
+                        "artist": "Guns N' Roses",
+                        "duration": 356
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Add multiple tracks to the playlist at once (POST /playlists/{playlistId}/tracks/multiple)
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "trackIds": ["%s", "%s", "%s"]
+                    }
+                    """.formatted(track1Id, track2Id, track3Id))
+            .when()
+                .post("/playlists/{playlistId}/tracks/multiple", playlistId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(playlistId))
+                .body("name", equalTo("My Mix Playlist"));
+
+        // Verify all tracks appear in the playlist (GET /playlists/{playlistId}/tracks)
+        given()
+            .when()
+                .get("/playlists/{playlistId}/tracks", playlistId)
+            .then()
+                .statusCode(200)
+                .body("size()", equalTo(3))
+                .body("find { it.id == '" + track1Id + "' }.title", equalTo("Hotel California"))
+                .body("find { it.id == '" + track2Id + "' }.title", equalTo("Stairway to Heaven"))
+                .body("find { it.id == '" + track3Id + "' }.title", equalTo("Sweet Child O' Mine"));
+
+        // Clean up: delete the playlist and tracks
+        given()
+            .when()
+                .delete("/playlists/{id}", playlistId)
+            .then()
+                .statusCode(204);
+
+        given().when().delete("/tracks/{id}", track1Id).then().statusCode(404);
+        given().when().delete("/tracks/{id}", track2Id).then().statusCode(404);
+        given().when().delete("/tracks/{id}", track3Id).then().statusCode(404);
+    }
 }
