@@ -54,6 +54,30 @@ public class Playlist {
      * Ordered list of tracks in this playlist.
      * Using @OrderColumn to maintain the position/order of tracks in the playlist.
      * This mapping supports the business requirement of managing track positions.
+     *
+     * <p><strong>Design decision:</strong>
+     * For this example, the association between Playlist and Track has been modeled as <code>@OneToMany</code>.
+     * Although in real-world scenarios a single track can belong to multiple playlists (which would typically
+     * suggest a <code>@ManyToMany</code> association), we chose <code>@OneToMany</code> here for two reasons:
+     * </p>
+     *
+     * <ul>
+     *   <li><strong>Alignment with project needs:</strong> This approach is closer to the simplified
+     *   requirements students will encounter in their own projects, where <code>@OneToMany</code>
+     *   relationships are more common and easier to manage.</li>
+     *
+     *   <li><strong>Pedagogical simplification:</strong> It avoids the added complexity of handling
+     *   bidirectional <code>@ManyToMany</code> mappings while still providing a realistic
+     *   model for ordered items within a parent entity.</li>
+     * </ul>
+     *
+     * <p><strong>Aggregation vs Composition:</strong>
+     * In practice, the relationship between playlists and tracks would be better described as
+     * an aggregation rather than composition, since a track can exist independently of any given playlist.
+     * However, for simplicity, we treat tracks as being contained within a playlist in this example.</p>
+     *
+     * <p>These deliberate simplifications strike a balance between realism and clarity, ensuring the
+     * example remains both relevant and approachable for educational purposes.</p>
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "playlist_id")
