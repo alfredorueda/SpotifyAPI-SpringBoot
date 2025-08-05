@@ -12,30 +12,99 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Simple end-to-end integration test for Playlist API endpoints.
- * Tests the complete happy path flow from REST controller through service, repository, and database.
+ * ADVANCED INTEGRATION TESTS FOR PLAYLIST API WITH TRACK RELATIONSHIPS
  * 
- * Uses @SpringBootTest with webEnvironment.RANDOM_PORT to start the full Spring context
- * with an embedded server for true end-to-end testing.
+ * This comprehensive test class demonstrates advanced Spring Boot integration testing
+ * patterns for junior developers learning complex REST API testing scenarios.
+ * 
+ * EDUCATIONAL FOCUS AREAS:
+ * 
+ * 1. COMPLEX RESOURCE RELATIONSHIPS
+ *    - One-to-Many relationships (Playlist → Tracks)
+ *    - Composition vs Aggregation patterns
+ *    - Cascade operations and lifecycle management
+ *    - Referential integrity testing
+ * 
+ * 2. ADVANCED ERROR HANDLING SCENARIOS
+ *    - Partial failure handling in batch operations
+ *    - Transactional behavior verification
+ *    - Cross-resource validation (playlist + track existence)
+ *    - Concurrent operation safety
+ * 
+ * 3. REAL-WORLD API PATTERNS
+ *    - Resource creation and linking workflows
+ *    - Bulk operations and their error semantics
+ *    - State consistency across related entities
+ *    - Proper cleanup and resource management
+ * 
+ * 4. SPRING BOOT TESTING BEST PRACTICES
+ *    - Test isolation and cleanup strategies
+ *    - Database state management in tests
+ *    - Integration test structure and organization
+ *    - Error scenario coverage and validation
+ * 
+ * COMPOSITION RELATIONSHIP EXPLAINED:
+ * In this system, Playlist and Track have a composition relationship, meaning:
+ * - Tracks are "owned" by playlists (strong ownership)
+ * - When a playlist is deleted, its tracks are also removed
+ * - Tracks cannot exist without being part of a playlist
+ * - This affects error handling and deletion semantics
+ * 
+ * This is different from aggregation where tracks would exist independently.
+ * Understanding this relationship is crucial for proper API design and testing.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class PlaylistControllerSimpleIntegrationTest {
 
+    /**
+     * Spring Boot automatically injects the random port number.
+     * Using random ports prevents conflicts when running tests in parallel
+     * or in CI/CD environments where multiple test suites run simultaneously.
+     */
     @LocalServerPort
     private int port;
 
+    /**
+     * SETUP CONFIGURATION FOR EACH TEST
+     * 
+     * The @BeforeEach annotation ensures this method runs before every test,
+     * providing clean state and consistent configuration. This is crucial for:
+     * - Test isolation (each test starts with known state)
+     * - Preventing test interdependencies
+     * - Consistent HTTP client configuration
+     */
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
         RestAssured.baseURI = "http://localhost";
     }
 
+    /**
+     * COMPLETE PLAYLIST LIFECYCLE TEST - FOUNDATION PATTERN
+     * 
+     * This test demonstrates the fundamental CRUD operations for a REST resource.
+     * Every REST API should support this basic lifecycle pattern.
+     * 
+     * LEARNING OBJECTIVES:
+     * - REST API design patterns and conventions
+     * - HTTP status code semantics and proper usage
+     * - Resource state transitions and persistence
+     * - JSON serialization/deserialization verification
+     * - Database integration and data consistency
+     * 
+     * WORKFLOW TESTED:
+     * CREATE → READ → UPDATE → LIST → DELETE → VERIFY DELETION
+     * 
+     * This pattern should work for any well-designed REST resource.
+     */
     @Test
     void shouldPerformSimplePlaylistLifecycle() {
-        // 1. Create a new playlist (POST /playlists)
+        // STEP 1: CREATE A NEW PLAYLIST
+        // POST /playlists - Creates a new playlist resource
+        // Expected: 201 Created with resource data and auto-generated fields
         String playlistId = given()
-                .contentType(ContentType.JSON)
+                .contentType(ContentType.JSON)  // Specify request content type
                 .body("""
                     {
                         "name": "My Favorite Songs",
@@ -43,28 +112,32 @@ class PlaylistControllerSimpleIntegrationTest {
                     }
                     """)
             .when()
-                .post("/playlists")
+                .post("/playlists")  // HTTP POST for resource creation
             .then()
-                .statusCode(201)
-                .body("name", equalTo("My Favorite Songs"))
+                .statusCode(201)  // 201 Created indicates successful resource creation
+                .body("name", equalTo("My Favorite Songs"))      // Verify request data persisted
                 .body("isPublic", equalTo(true))
-                .body("id", notNullValue())
-                .body("createdAt", notNullValue())
+                .body("id", notNullValue())                      // Server generates unique ID
+                .body("createdAt", notNullValue())               // Server sets creation timestamp
             .extract()
-                .path("id");
+                .path("id");  // Extract ID for subsequent operations
 
-        // 2. Retrieve the created playlist by ID (GET /playlists/{id})
+        // STEP 2: RETRIEVE THE CREATED PLAYLIST BY ID
+        // GET /playlists/{id} - Retrieves specific playlist by ID
+        // Expected: 200 OK with complete resource data
         given()
             .when()
-                .get("/playlists/{id}", playlistId)
+                .get("/playlists/{id}", playlistId)  // Path parameter substitution
             .then()
-                .statusCode(200)
-                .body("id", equalTo(playlistId))
+                .statusCode(200)  // 200 OK for successful retrieval
+                .body("id", equalTo(playlistId))             // Verify correct resource returned
                 .body("name", equalTo("My Favorite Songs"))
                 .body("isPublic", equalTo(true))
-                .body("createdAt", notNullValue());
+                .body("createdAt", notNullValue());          // Verify persistence of timestamps
 
-        // 3. Update the playlist (PUT /playlists/{id})
+        // STEP 3: UPDATE THE PLAYLIST
+        // PUT /playlists/{id} - Complete resource replacement
+        // Expected: 200 OK with updated resource data
         given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -74,41 +147,65 @@ class PlaylistControllerSimpleIntegrationTest {
                     }
                     """)
             .when()
-                .put("/playlists/{id}", playlistId)
+                .put("/playlists/{id}", playlistId)  // HTTP PUT for complete update
             .then()
-                .statusCode(200)
-                .body("id", equalTo(playlistId))
-                .body("name", equalTo("My Updated Playlist"))
+                .statusCode(200)  // 200 OK for successful update
+                .body("id", equalTo(playlistId))             // ID remains unchanged
+                .body("name", equalTo("My Updated Playlist")) // Updates applied
                 .body("isPublic", equalTo(false));
 
-        // 4. Verify the playlist appears in the list of all playlists (GET /playlists)
+        // STEP 4: VERIFY PLAYLIST APPEARS IN COLLECTION
+        // GET /playlists - Retrieves all playlists
+        // Expected: 200 OK with array containing our playlist
         given()
             .when()
-                .get("/playlists")
+                .get("/playlists")  // Collection endpoint
             .then()
                 .statusCode(200)
-                .body("size()", greaterThanOrEqualTo(1))
+                .body("size()", greaterThanOrEqualTo(1))  // At least our playlist exists
                 .body("find { it.id == '" + playlistId + "' }.name", 
-                      equalTo("My Updated Playlist"));
+                      equalTo("My Updated Playlist"));        // Verify our playlist in collection
 
-        // 5. Delete the playlist (DELETE /playlists/{id})
+        // STEP 5: DELETE THE PLAYLIST
+        // DELETE /playlists/{id} - Removes the resource
+        // Expected: 204 No Content (successful deletion, no response body)
         given()
             .when()
                 .delete("/playlists/{id}", playlistId)
             .then()
-                .statusCode(204);
+                .statusCode(204);  // 204 No Content indicates successful deletion
 
-        // 6. Verify the playlist is no longer accessible (GET /playlists/{id})
+        // STEP 6: VERIFY DELETION COMPLETED
+        // GET /playlists/{id} - Attempt to retrieve deleted resource
+        // Expected: 404 Not Found (resource no longer exists)
         given()
             .when()
                 .get("/playlists/{id}", playlistId)
             .then()
-                .statusCode(404);
+                .statusCode(404);  // 404 Not Found confirms deletion
     }
 
+    /**
+     * BASIC TRACK-TO-PLAYLIST RELATIONSHIP TEST
+     * 
+     * This test introduces the concept of resource relationships in REST APIs.
+     * It demonstrates how to work with related resources and manage their lifecycle.
+     * 
+     * LEARNING OBJECTIVES:
+     * - Resource relationship management in REST APIs
+     * - Sub-resource endpoints (nested resource access)
+     * - Composition relationship behavior and implications
+     * - Cross-resource operations and their semantics
+     * - Resource cleanup and cascade deletion patterns
+     * 
+     * RELATIONSHIP PATTERN DEMONSTRATED:
+     * Playlist (1) ← contains → (N) Tracks
+     * 
+     * This is a composition relationship where tracks are owned by playlists.
+     */
     @Test
     void shouldAddTracksToPlaylist() {
-        // First, create a playlist
+        // STEP 1: CREATE A PLAYLIST (PARENT RESOURCE)
         String playlistId = given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -125,7 +222,9 @@ class PlaylistControllerSimpleIntegrationTest {
             .extract()
                 .path("id");
 
-        // Then, create a track to add to the playlist
+        // STEP 2: CREATE A TRACK (CHILD RESOURCE)
+        // Note: In this system, tracks can be created independently first,
+        // then associated with playlists through a separate operation
         String trackId = given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -143,7 +242,9 @@ class PlaylistControllerSimpleIntegrationTest {
             .extract()
                 .path("id");
 
-        // Add the track to the playlist (POST /playlists/{playlistId}/tracks)
+        // STEP 3: ADD TRACK TO PLAYLIST (ESTABLISH RELATIONSHIP)
+        // POST /playlists/{playlistId}/tracks - Adds a track to a specific playlist
+        // This creates the relationship between the two resources
         given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -152,65 +253,73 @@ class PlaylistControllerSimpleIntegrationTest {
                     }
                     """.formatted(trackId))
             .when()
-                .post("/playlists/{playlistId}/tracks", playlistId)
+                .post("/playlists/{playlistId}/tracks", playlistId)  // Sub-resource endpoint
             .then()
-                .statusCode(200)
+                .statusCode(200)  // 200 OK for successful relationship creation
                 .body("id", equalTo(playlistId))
                 .body("name", equalTo("Rock Classics"));
 
-        // Verify the track appears in the playlist (GET /playlists/{playlistId}/tracks)
+        // STEP 4: VERIFY TRACK APPEARS IN PLAYLIST
+        // GET /playlists/{playlistId}/tracks - Retrieves tracks within a playlist
+        // This demonstrates sub-resource access patterns
         given()
             .when()
                 .get("/playlists/{playlistId}/tracks", playlistId)
             .then()
                 .statusCode(200)
-                .body("size()", equalTo(1))
-                .body("[0].id", equalTo(trackId))
+                .body("size()", equalTo(1))                   // One track in playlist
+                .body("[0].id", equalTo(trackId))             // Correct track included
                 .body("[0].title", equalTo("Bohemian Rhapsody"))
                 .body("[0].artist", equalTo("Queen"));
 
         /**
-         * <hr></hr> The observed behavior, where deleting a playlist returns a 204 No Content
-         * status and subsequently attempting to delete a track from that playlist returns a
-         * 404 Not Found, is consistent with a domain model based on composition. In this model,
-         * the playlist entity is considered the owner of its tracks. Consequently, when a
-         * playlist is deleted, all associated tracks are also removed from the system. Any
-         * further operation on those tracks, such as deletion, will result in a 404 Not Found
-         * response, as the tracks no longer exist.
-         *
-         * This behavior aligns with the principles of strong composition in domain-driven
-         * design, where the lifecycle of the contained entities (tracks) is strictly bound
-         * to the aggregate root (playlist). The test expecting a 404 response after the
-         * playlist deletion is therefore correct under this model.
-         *
-         * If, however, the domain requires tracks to exist independently of playlists, the
-         * implementation should be adjusted so that deleting a playlist does not remove its
-         * tracks. In such a scenario, deleting a track after its playlist has been deleted
-         * should still return a 204 No Content status, indicating successful deletion.
-         *
-         * In summary, the correctness of the test and the implementation depends on the
-         * intended domain model. For a composition relationship, the current behavior and
-         * test expectations are appropriate. If a different relationship is desired, the
-         * implementation should be revised accordingly.
+         * COMPOSITION RELATIONSHIP BEHAVIOR DEMONSTRATION
+         * 
+         * The following cleanup section demonstrates the composition relationship
+         * between playlists and tracks. In a composition relationship:
+         * 
+         * - The parent (playlist) owns the children (tracks)
+         * - Deleting the parent also removes the children
+         * - Children cannot exist independently after parent deletion
+         * 
+         * This is different from aggregation where children would remain
+         * independent after parent deletion.
          */
 
-        // Clean up: delete the playlist and track
+        // STEP 5: DELETE THE PLAYLIST (PARENT RESOURCE)
         given()
             .when()
                 .delete("/playlists/{id}", playlistId)
             .then()
-                .statusCode(204);
+                .statusCode(204);  // Successful deletion
 
+        // STEP 6: VERIFY COMPOSITION RELATIONSHIP EFFECT
+        // Due to composition relationship, deleting the playlist should also
+        // remove its tracks. Attempting to delete the track should return 404
+        // because it no longer exists (was deleted with the playlist).
         given()
             .when()
                 .delete("/tracks/{id}", trackId)
             .then()
-                .statusCode(404);
+                .statusCode(404);  // Track no longer exists due to composition
     }
 
+    /**
+     * BULK OPERATIONS TEST - MULTIPLE TRACKS TO PLAYLIST
+     * 
+     * This test demonstrates bulk operations and their importance in real-world APIs.
+     * Bulk operations improve performance and provide better user experience.
+     * 
+     * LEARNING OBJECTIVES:
+     * - Bulk operation design patterns
+     * - Performance considerations in API design
+     * - Batch request/response handling
+     * - All-or-nothing operation semantics
+     * - Error handling in bulk operations
+     */
     @Test
     void shouldAddMultipleTracksToPlaylist() {
-        // First, create a playlist
+        // Create a playlist for bulk operations testing
         String playlistId = given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -227,7 +336,8 @@ class PlaylistControllerSimpleIntegrationTest {
             .extract()
                 .path("id");
 
-        // Create multiple tracks to add to the playlist
+        // Create multiple tracks to demonstrate bulk operations
+        // In real applications, you might create tracks in bulk too
         String track1Id = given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -279,7 +389,9 @@ class PlaylistControllerSimpleIntegrationTest {
             .extract()
                 .path("id");
 
-        // Add multiple tracks to the playlist at once (POST /playlists/{playlistId}/tracks/multiple)
+        // BULK OPERATION: Add multiple tracks at once
+        // POST /playlists/{playlistId}/tracks/multiple - Bulk track addition
+        // This is more efficient than multiple individual requests
         given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -290,28 +402,30 @@ class PlaylistControllerSimpleIntegrationTest {
             .when()
                 .post("/playlists/{playlistId}/tracks/multiple", playlistId)
             .then()
-                .statusCode(200)
+                .statusCode(200)  // 200 OK for successful bulk operation
                 .body("id", equalTo(playlistId))
                 .body("name", equalTo("My Mix Playlist"));
 
-        // Verify all tracks appear in the playlist (GET /playlists/{playlistId}/tracks)
+        // VERIFY ALL TRACKS ADDED SUCCESSFULLY
+        // The bulk operation should be atomic - all tracks added or none
         given()
             .when()
                 .get("/playlists/{playlistId}/tracks", playlistId)
             .then()
                 .statusCode(200)
-                .body("size()", equalTo(3))
+                .body("size()", equalTo(3))  // All three tracks should be present
                 .body("find { it.id == '" + track1Id + "' }.title", equalTo("Hotel California"))
                 .body("find { it.id == '" + track2Id + "' }.title", equalTo("Stairway to Heaven"))
                 .body("find { it.id == '" + track3Id + "' }.title", equalTo("Sweet Child O' Mine"));
 
-        // Clean up: delete the playlist and tracks
+        // Clean up: demonstrate composition relationship again
         given()
             .when()
                 .delete("/playlists/{id}", playlistId)
             .then()
                 .statusCode(204);
 
+        // All tracks should be deleted due to composition relationship
         given().when().delete("/tracks/{id}", track1Id).then().statusCode(404);
         given().when().delete("/tracks/{id}", track2Id).then().statusCode(404);
         given().when().delete("/tracks/{id}", track3Id).then().statusCode(404);
