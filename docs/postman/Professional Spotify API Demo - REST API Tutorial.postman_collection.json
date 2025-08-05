@@ -1,9 +1,10 @@
 {
 	"info": {
 		"_postman_id": "1df4163f-4caf-4072-8cdf-a378ec917e91",
-		"name": "Spotify API Test 1",
+		"name": "Professional Spotify API Demo - REST API Tutorial",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "4461277"
+		"_exporter_id": "4461277",
+		"_collection_link": "https://neueda-citi-training.postman.co/workspace/Neueda-Citi-Training-Workspace~83bb5f09-6404-4c10-83a9-7a6b54d9b8a6/collection/4461277-1df4163f-4caf-4072-8cdf-a378ec917e91?action=share&source=collection_link&creator=4461277"
 	},
 	"item": [
 		{
@@ -123,6 +124,13 @@
 						"type": "text/javascript",
 						"packages": {}
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
 				}
 			],
 			"request": {
@@ -140,7 +148,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Code & Groove: The Ultimate Tech Training Playlist\",\n  \"description\": \"Playlist created during our tech training session.\",\n  \"public\": false\n}",
+					"raw": "{\n  \"name\": \"Prueba 5 Agosto 2\",\n  \"description\": \"Playlist created during our tech training session.\",\n  \"public\": false\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -148,7 +156,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://api.spotify.com/v1/users/alfredoru/playlists",
+					"raw": "https://api.spotify.com/v1/users/{{user_id}}/playlists",
 					"protocol": "https",
 					"host": [
 						"api",
@@ -158,7 +166,7 @@
 					"path": [
 						"v1",
 						"users",
-						"alfredoru",
+						"{{user_id}}",
 						"playlists"
 					]
 				}
@@ -251,6 +259,54 @@
 		},
 		{
 			"name": "Get Your Playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var template = `",
+							"<style type=\"text/css\">",
+							"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}",
+							"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}",
+							"    .tftable tr {background-color:#ffffff;}",
+							"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}",
+							"    .tftable tr:hover {background-color:#e0ffff;}",
+							"</style>",
+							"",
+							"<table class=\"tftable\" border=\"1\">",
+							"    <tr>",
+							"        <th>Track Name</th>",
+							"        <th>Artists</th>",
+							"        <th>Duration (ms)</th>",
+							"        <th>Explicit</th>",
+							"    </tr>",
+							"    ",
+							"    {{#each response.items}}",
+							"        <tr>",
+							"            <td>{{track.name}}</td>",
+							"            <td>",
+							"                {{#each track.artists}}",
+							"                    {{name}}{{#unless @last}}, {{/unless}}",
+							"                {{/each}}",
+							"            </td>",
+							"            <td>{{duration_ms}}</td>",
+							"            <td>{{#if explicit}}Yes{{else}}No{{/if}}</td>",
+							"        </tr>",
+							"    {{/each}}",
+							"</table>",
+							"`;",
+							"",
+							"function constructVisualizerPayload() {",
+							"    return { response: pm.response.json() };",
+							"}",
+							"",
+							"pm.visualizer.set(template, constructVisualizerPayload());"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -315,6 +371,11 @@
 			"key": "access_token_spotify",
 			"value": "",
 			"type": "default"
+		},
+		{
+			"key": "user_id",
+			"value": "alfredoru",
+			"type": "string"
 		}
 	]
 }
