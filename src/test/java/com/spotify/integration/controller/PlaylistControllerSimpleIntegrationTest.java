@@ -316,4 +316,306 @@ class PlaylistControllerSimpleIntegrationTest {
         given().when().delete("/tracks/{id}", track2Id).then().statusCode(404);
         given().when().delete("/tracks/{id}", track3Id).then().statusCode(404);
     }
+
+    @Test
+    void shouldHandleErrorWhenAddingNonExistentTrack() {
+        // First, create a playlist
+        String playlistId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "name": "Error Test Playlist",
+                        "isPublic": true
+                    }
+                    """)
+            .when()
+                .post("/playlists")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Try to add a non-existent track to the playlist
+        String nonExistentTrackId = "non-existent-track-id";
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "trackId": "%s"
+                    }
+                    """.formatted(nonExistentTrackId))
+            .when()
+                .post("/playlists/{playlistId}/tracks", playlistId)
+            .then()
+                .statusCode(404); // Expecting 404 for non-existent track
+
+        // Clean up: delete the playlist
+        given()
+            .when()
+                .delete("/playlists/{id}", playlistId)
+            .then()
+                .statusCode(204);
+    }
+
+    @Test
+    void shouldHandleErrorWhenAddingMultipleNonExistentTracks() {
+        // First, create a playlist
+        String playlistId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "name": "Multiple Error Test Playlist",
+                        "isPublic": true
+                    }
+                    """)
+            .when()
+                .post("/playlists")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Try to add multiple non-existent tracks to the playlist
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "trackIds": ["non-existent-1", "non-existent-2", "non-existent-3"]
+                    }
+                    """)
+            .when()
+                .post("/playlists/{playlistId}/tracks/multiple", playlistId)
+            .then()
+                .statusCode(404); // Expecting 404 for non-existent tracks
+
+        // Clean up: delete the playlist
+        given()
+            .when()
+                .delete("/playlists/{id}", playlistId)
+            .then()
+                .statusCode(204);
+    }
+
+    @Test
+    void shouldHandleErrorWhenAddingTrackToNonExistentPlaylist() {
+        // Create a track first
+        String trackId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Lonely Track",
+                        "artist": "Test Artist",
+                        "duration": 180
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Try to add the track to a non-existent playlist
+        String nonExistentPlaylistId = "non-existent-playlist-id";
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "trackId": "%s"
+                    }
+                    """.formatted(trackId))
+            .when()
+                .post("/playlists/{playlistId}/tracks", nonExistentPlaylistId)
+            .then()
+                .statusCode(404); // Expecting 404 for non-existent playlist
+
+        // Clean up: delete the track
+        given()
+            .when()
+                .delete("/tracks/{id}", trackId)
+            .then()
+                .statusCode(204);
+    }
+
+    @Test
+    void shouldVerifyCompositionRelationshipWhenTrackIsDeleted() {
+        // Create a playlist
+        String playlistId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "name": "Composition Test Playlist",
+                        "isPublic": true
+                    }
+                    """)
+            .when()
+                .post("/playlists")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Create a track
+        String trackId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Temporary Track",
+                        "artist": "Test Artist",
+                        "duration": 200
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Add the track to the playlist
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "trackId": "%s"
+                    }
+                    """.formatted(trackId))
+            .when()
+                .post("/playlists/{playlistId}/tracks", playlistId)
+            .then()
+                .statusCode(200);
+
+        // Verify the track is in the playlist
+        given()
+            .when()
+                .get("/playlists/{playlistId}/tracks", playlistId)
+            .then()
+                .statusCode(200)
+                .body("size()", equalTo(1))
+                .body("[0].id", equalTo(trackId));
+
+        // Delete the track (this should affect the composition relationship)
+        given()
+            .when()
+                .delete("/tracks/{id}", trackId)
+            .then()
+                .statusCode(204);
+
+        // Now verify that the track is no longer accessible individually
+        given()
+            .when()
+                .get("/tracks/{id}", trackId)
+            .then()
+                .statusCode(404); // Track should not exist anymore
+
+        // Due to composition relationship, the playlist should handle this gracefully
+        // The playlist should still exist but the track should no longer be in it
+        given()
+            .when()
+                .get("/playlists/{playlistId}/tracks", playlistId)
+            .then()
+                .statusCode(200)
+                .body("size()", equalTo(0)); // No tracks should remain
+
+        // Clean up: delete the playlist
+        given()
+            .when()
+                .delete("/playlists/{id}", playlistId)
+            .then()
+                .statusCode(204);
+    }
+
+    @Test
+    void shouldHandlePartialErrorWhenAddingMixOfExistentAndNonExistentTracks() {
+        // First, create a playlist
+        String playlistId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "name": "Partial Error Test Playlist",
+                        "isPublic": true
+                    }
+                    """)
+            .when()
+                .post("/playlists")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Create some valid tracks
+        String validTrack1Id = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Valid Track 1",
+                        "artist": "Real Artist",
+                        "duration": 180
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        String validTrack2Id = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "title": "Valid Track 2",
+                        "artist": "Real Artist 2",
+                        "duration": 220
+                    }
+                    """)
+            .when()
+                .post("/tracks")
+            .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+            .extract()
+                .path("id");
+
+        // Try to add a mix of valid and invalid tracks to the playlist
+        // This should test how the system handles partial failures
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "trackIds": ["%s", "non-existent-track-1", "%s", "non-existent-track-2"]
+                    }
+                    """.formatted(validTrack1Id, validTrack2Id))
+            .when()
+                .post("/playlists/{playlistId}/tracks/multiple", playlistId)
+            .then()
+                .statusCode(404); // Expecting 404 because some tracks don't exist
+                // The system should fail fast and not add any tracks if any are invalid
+
+        // Verify that no tracks were added to the playlist due to the partial failure
+        // This tests the transactional behavior - either all tracks are added or none
+        given()
+            .when()
+                .get("/playlists/{playlistId}/tracks", playlistId)
+            .then()
+                .statusCode(200)
+                .body("size()", equalTo(0)); // No tracks should have been added
+
+        // Clean up: delete the playlist and the valid tracks
+        given()
+            .when()
+                .delete("/playlists/{id}", playlistId)
+            .then()
+                .statusCode(204);
+
+        given().when().delete("/tracks/{id}", validTrack1Id).then().statusCode(204);
+        given().when().delete("/tracks/{id}", validTrack2Id).then().statusCode(204);
+    }
 }
