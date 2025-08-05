@@ -1,0 +1,355 @@
+###
+# SPOTIFY API DEMO - HTTP REQUESTS FOR INTELLIJ IDEA WITH AUTOMATIC ID EXTRACTION
+# 
+# This file uses IntelliJ IDEA's advanced HTTP Client features to automatically
+# extract IDs from responses and use them in subsequent requests.
+# 
+# HOW TO USE:
+# 1. Make sure your Spring Boot application is running (mvn spring-boot:run)
+# 2. You can run ALL requests in sequence by clicking "Run All" in the HTTP Client
+# 3. IDs are automatically extracted and stored in variables for reuse
+# 4. No manual copy-paste needed - everything flows automatically!
+# 
+# INTELLIJ IDEA FEATURES USED:
+# - Response handlers with JavaScript to extract data
+# - Global variables to store extracted IDs
+# - Variable substitution in subsequent requests
+###
+
+### 1. CREATE TRACKS FOR DEMO WITH AUTOMATIC ID EXTRACTION
+
+### Create Track 1 - Bohemian Rhapsody
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Bohemian Rhapsody",
+  "artist": "Queen",
+  "duration": 355
+}
+
+> {%
+client.global.set("track1_id", response.body.id);
+client.log("Created track 1 with ID: " + response.body.id);
+%}
+
+### Create Track 2 - Hotel California
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Hotel California",
+  "artist": "Eagles",
+  "duration": 391
+}
+
+> {%
+client.global.set("track2_id", response.body.id);
+client.log("Created track 2 with ID: " + response.body.id);
+%}
+
+### Create Track 3 - Stairway to Heaven
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Stairway to Heaven",
+  "artist": "Led Zeppelin",
+  "duration": 482
+}
+
+> {%
+client.global.set("track3_id", response.body.id);
+client.log("Created track 3 with ID: " + response.body.id);
+%}
+
+### Create Track 4 - Sweet Child O' Mine
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Sweet Child O' Mine",
+  "artist": "Guns N' Roses",
+  "duration": 356
+}
+
+> {%
+client.global.set("track4_id", response.body.id);
+client.log("Created track 4 with ID: " + response.body.id);
+%}
+
+### Create Track 5 - Imagine
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Imagine",
+  "artist": "John Lennon",
+  "duration": 183
+}
+
+> {%
+client.global.set("track5_id", response.body.id);
+client.log("Created track 5 with ID: " + response.body.id);
+%}
+
+###
+
+### 2. LIST ALL TRACKS (to see what we created)
+GET http://localhost:8080/tracks
+
+> {%
+client.log("Total tracks created: " + response.body.length);
+%}
+
+###
+
+### 3. CREATE PLAYLISTS WITH AUTOMATIC ID EXTRACTION
+
+### Create Playlist 1 - Rock Classics
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Rock Classics",
+  "isPublic": true
+}
+
+> {%
+client.global.set("playlist1_id", response.body.id);
+client.log("Created playlist 1 (Rock Classics) with ID: " + response.body.id);
+%}
+
+### Create Playlist 2 - My Favorites
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "My Favorites",
+  "isPublic": false
+}
+
+> {%
+client.global.set("playlist2_id", response.body.id);
+client.log("Created playlist 2 (My Favorites) with ID: " + response.body.id);
+%}
+
+### Create Playlist 3 - Study Music
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Study Music",
+  "isPublic": true
+}
+
+> {%
+client.global.set("playlist3_id", response.body.id);
+client.log("Created playlist 3 (Study Music) with ID: " + response.body.id);
+%}
+
+###
+
+### 4. LIST ALL PLAYLISTS (to see what we created)
+GET http://localhost:8080/playlists
+
+> {%
+client.log("Total playlists created: " + response.body.length);
+%}
+
+###
+
+### 5. ADD TRACKS TO PLAYLISTS USING EXTRACTED IDs
+
+### Add Bohemian Rhapsody to Rock Classics
+POST http://localhost:8080/playlists/{{playlist1_id}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{track1_id}}"
+}
+
+> {%
+client.log("Added Bohemian Rhapsody to Rock Classics playlist");
+%}
+
+### Add Hotel California to Rock Classics
+POST http://localhost:8080/playlists/{{playlist1_id}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{track2_id}}"
+}
+
+> {%
+client.log("Added Hotel California to Rock Classics playlist");
+%}
+
+### Add multiple tracks to My Favorites playlist at once
+POST http://localhost:8080/playlists/{{playlist2_id}}/tracks/multiple
+Content-Type: application/json
+
+{
+  "trackIds": ["{{track3_id}}", "{{track4_id}}", "{{track5_id}}"]
+}
+
+> {%
+client.log("Added 3 tracks to My Favorites playlist in bulk");
+%}
+
+###
+
+### 6. VIEW TRACKS IN PLAYLISTS USING EXTRACTED IDs
+
+### View tracks in Rock Classics playlist
+GET http://localhost:8080/playlists/{{playlist1_id}}/tracks
+
+> {%
+client.log("Rock Classics playlist contains " + response.body.length + " tracks");
+%}
+
+### View tracks in My Favorites playlist
+GET http://localhost:8080/playlists/{{playlist2_id}}/tracks
+
+> {%
+client.log("My Favorites playlist contains " + response.body.length + " tracks");
+%}
+
+### View tracks in Study Music playlist (should be empty)
+GET http://localhost:8080/playlists/{{playlist3_id}}/tracks
+
+> {%
+client.log("Study Music playlist contains " + response.body.length + " tracks");
+%}
+
+###
+
+### 7. UPDATE EXAMPLES USING EXTRACTED IDs
+
+### Update the first track
+PUT http://localhost:8080/tracks/{{track1_id}}
+Content-Type: application/json
+
+{
+  "title": "Bohemian Rhapsody (Remastered 2024)",
+  "artist": "Queen",
+  "duration": 360
+}
+
+> {%
+client.log("Updated track: " + response.body.title);
+%}
+
+### Update the Rock Classics playlist
+PUT http://localhost:8080/playlists/{{playlist1_id}}
+Content-Type: application/json
+
+{
+  "name": "Classic Rock Hits",
+  "isPublic": true
+}
+
+> {%
+client.log("Updated playlist name to: " + response.body.name);
+%}
+
+###
+
+### 8. COMPLETE DEMO WORKFLOW WITH NEW ENTITIES
+
+### Create a demo track with ID extraction
+POST http://localhost:8080/tracks
+Content-Type: application/json
+
+{
+  "title": "Demo Song for Students",
+  "artist": "Demo Artist",
+  "duration": 240
+}
+
+> {%
+client.global.set("demo_track_id", response.body.id);
+client.log("Created demo track with ID: " + response.body.id);
+%}
+
+### Create a demo playlist with ID extraction
+POST http://localhost:8080/playlists
+Content-Type: application/json
+
+{
+  "name": "Live Demo Playlist",
+  "isPublic": true
+}
+
+> {%
+client.global.set("demo_playlist_id", response.body.id);
+client.log("Created demo playlist with ID: " + response.body.id);
+%}
+
+### Add the demo track to demo playlist using variables
+POST http://localhost:8080/playlists/{{demo_playlist_id}}/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{demo_track_id}}"
+}
+
+> {%
+client.log("Added demo track to demo playlist successfully!");
+%}
+
+### View the complete demo playlist
+GET http://localhost:8080/playlists/{{demo_playlist_id}}/tracks
+
+> {%
+client.log("Demo playlist setup complete! Contains " + response.body.length + " tracks");
+client.log("Demo track title: " + response.body[0].title);
+%}
+
+###
+
+### 9. VERIFICATION REQUESTS - CHECK THE FINAL STATE
+
+### Get details of updated track
+GET http://localhost:8080/tracks/{{track1_id}}
+
+> {%
+client.log("Final track title: " + response.body.title + " by " + response.body.artist);
+%}
+
+### Get details of updated playlist
+GET http://localhost:8080/playlists/{{playlist1_id}}
+
+> {%
+client.log("Final playlist name: " + response.body.name);
+%}
+
+### Get all playlists to see the final state
+GET http://localhost:8080/playlists
+
+> {%
+client.log("=== DEMO COMPLETE ===");
+client.log("Total playlists in system: " + response.body.length);
+response.body.forEach(function(playlist) {
+    client.log("- " + playlist.name + " (ID: " + playlist.id + ")");
+});
+%}
+
+###
+
+### 10. OPTIONAL CLEANUP (Uncomment to use)
+### Note: Due to composition relationship, deleting playlists will also delete their tracks
+
+### Uncomment these lines if you want to clean up after demo:
+# DELETE http://localhost:8080/playlists/{{demo_playlist_id}}
+# 
+# > {%
+# client.log("Deleted demo playlist and its tracks");
+# %}
+
+### Clean up all created playlists (this will also delete associated tracks)
+# DELETE http://localhost:8080/playlists/{{playlist1_id}}
+# DELETE http://localhost:8080/playlists/{{playlist2_id}}
+# DELETE http://localhost:8080/playlists/{{playlist3_id}}
+
+###
