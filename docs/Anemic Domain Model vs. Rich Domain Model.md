@@ -106,7 +106,7 @@ Here, the withdrawal rules are enforced inside the entity itself, preventing ext
 
 ---
 
-## 4. Why Industry (Including Citibank) Prefers DDD
+## 4. Why Industry Prefers DDD
 
 - Better communication with business stakeholders through ubiquitous language.
 - Reduced accidental complexity by keeping the model close to the business problem.
