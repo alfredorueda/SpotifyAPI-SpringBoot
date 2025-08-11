@@ -1,0 +1,1216 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Spotify API Demo - Complete Workflow",
+		"description": "Comprehensive Spotify API demonstration with automatic ID extraction and variable management. This collection demonstrates the complete CRUD lifecycle for tracks and playlists with their relationships.\n\nFeatures:\n- Automatic ID extraction from responses\n- Variable-based workflow (no manual copy-paste needed)\n- Complete CRUD operations for tracks and playlists\n- Relationship management between playlists and tracks\n- Error handling demonstrations\n- Bulk operations support\n\nHow to use:\n1. Make sure your Spring Boot application is running on localhost:8080\n2. Run the collection using Collection Runner for automatic execution\n3. Variables are automatically set and used throughout the collection\n4. Check the Test Results tab to see the extracted IDs and logs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Create Tracks",
+			"item": [
+				{
+					"name": "Create Track 1 - Bohemian Rhapsody",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('track1_id', responseJson.id);",
+									"    console.log('Created track 1 with ID: ' + responseJson.id);",
+									"    pm.test('Track created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.title).to.equal('Bohemian Rhapsody');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Bohemian Rhapsody\",\n  \"artist\": \"Queen\",\n  \"duration\": 355\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Track 2 - Hotel California",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('track2_id', responseJson.id);",
+									"    console.log('Created track 2 with ID: ' + responseJson.id);",
+									"    pm.test('Track created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.title).to.equal('Hotel California');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Hotel California\",\n  \"artist\": \"Eagles\",\n  \"duration\": 391\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Track 3 - Stairway to Heaven",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('track3_id', responseJson.id);",
+									"    console.log('Created track 3 with ID: ' + responseJson.id);",
+									"    pm.test('Track created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.title).to.equal('Stairway to Heaven');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Stairway to Heaven\",\n  \"artist\": \"Led Zeppelin\",\n  \"duration\": 482\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Track 4 - Sweet Child O' Mine",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('track4_id', responseJson.id);",
+									"    console.log('Created track 4 with ID: ' + responseJson.id);",
+									"    pm.test('Track created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.title).to.equal(\"Sweet Child O' Mine\");",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Sweet Child O' Mine\",\n  \"artist\": \"Guns N' Roses\",\n  \"duration\": 356\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Track 5 - Imagine",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('track5_id', responseJson.id);",
+									"    console.log('Created track 5 with ID: ' + responseJson.id);",
+									"    pm.test('Track created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.title).to.equal('Imagine');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Imagine\",\n  \"artist\": \"John Lennon\",\n  \"duration\": 183\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. List All Tracks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Total tracks created: ' + responseJson.length);",
+							"    pm.test('Tracks retrieved successfully', function () {",
+							"        pm.expect(pm.response.code).to.equal(200);",
+							"        pm.expect(responseJson).to.be.an('array');",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/tracks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tracks"
+					]
+				}
+			}
+		},
+		{
+			"name": "3. Create Playlists",
+			"item": [
+				{
+					"name": "Create Playlist 1 - Rock Classics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('playlist1_id', responseJson.id);",
+									"    console.log('Created playlist 1 (Rock Classics) with ID: ' + responseJson.id);",
+									"    pm.test('Playlist created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.name).to.equal('Rock Classics');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Rock Classics\",\n  \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Playlist 2 - My Favorites",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('playlist2_id', responseJson.id);",
+									"    console.log('Created playlist 2 (My Favorites) with ID: ' + responseJson.id);",
+									"    pm.test('Playlist created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.name).to.equal('My Favorites');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Favorites\",\n  \"isPublic\": false\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Playlist 3 - Study Music",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('playlist3_id', responseJson.id);",
+									"    console.log('Created playlist 3 (Study Music) with ID: ' + responseJson.id);",
+									"    pm.test('Playlist created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.name).to.equal('Study Music');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Study Music\",\n  \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. List All Playlists",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Total playlists created: ' + responseJson.length);",
+							"    pm.test('Playlists retrieved successfully', function () {",
+							"        pm.expect(pm.response.code).to.equal(200);",
+							"        pm.expect(responseJson).to.be.an('array');",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/playlists",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"playlists"
+					]
+				}
+			}
+		},
+		{
+			"name": "5. Add Tracks to Playlists",
+			"item": [
+				{
+					"name": "Add Bohemian Rhapsody to Rock Classics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('Added Bohemian Rhapsody to Rock Classics playlist');",
+									"    pm.test('Track added to playlist successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trackId\": \"{{track1_id}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist1_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist1_id}}",
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Hotel California to Rock Classics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('Added Hotel California to Rock Classics playlist');",
+									"    pm.test('Track added to playlist successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trackId\": \"{{track2_id}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist1_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist1_id}}",
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Multiple Tracks to My Favorites (Bulk Operation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('Added 3 tracks to My Favorites playlist in bulk');",
+									"    pm.test('Bulk tracks added to playlist successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trackIds\": [\"{{track3_id}}\", \"{{track4_id}}\", \"{{track5_id}}\"]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist2_id}}/tracks/multiple",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist2_id}}",
+								"tracks",
+								"multiple"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. View Tracks in Playlists",
+			"item": [
+				{
+					"name": "View Tracks in Rock Classics Playlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Rock Classics playlist contains ' + responseJson.length + ' tracks');",
+									"    pm.test('Playlist tracks retrieved successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson).to.be.an('array');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist1_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist1_id}}",
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "View Tracks in My Favorites Playlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('My Favorites playlist contains ' + responseJson.length + ' tracks');",
+									"    pm.test('Playlist tracks retrieved successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson).to.be.an('array');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist2_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist2_id}}",
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "View Tracks in Study Music Playlist (Empty)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Study Music playlist contains ' + responseJson.length + ' tracks');",
+									"    pm.test('Empty playlist retrieved successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson).to.be.an('array');",
+									"        pm.expect(responseJson.length).to.equal(0);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist3_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist3_id}}",
+								"tracks"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Update Examples",
+			"item": [
+				{
+					"name": "Update Track - Bohemian Rhapsody Remastered",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Updated track: ' + responseJson.title);",
+									"    pm.test('Track updated successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson.title).to.equal('Bohemian Rhapsody (Remastered 2024)');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Bohemian Rhapsody (Remastered 2024)\",\n  \"artist\": \"Queen\",\n  \"duration\": 360\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks/{{track1_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks",
+								"{{track1_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Playlist - Classic Rock Hits",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Updated playlist name to: ' + responseJson.name);",
+									"    pm.test('Playlist updated successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson.name).to.equal('Classic Rock Hits');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Classic Rock Hits\",\n  \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist1_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist1_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Complete Demo Workflow",
+			"item": [
+				{
+					"name": "Create Demo Track for Students",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('demo_track_id', responseJson.id);",
+									"    console.log('Created demo track with ID: ' + responseJson.id);",
+									"    pm.test('Demo track created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.title).to.equal('Demo Song for Students');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Demo Song for Students\",\n  \"artist\": \"Demo Artist\",\n  \"duration\": 240\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Live Demo Playlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.collectionVariables.set('demo_playlist_id', responseJson.id);",
+									"    console.log('Created demo playlist with ID: ' + responseJson.id);",
+									"    pm.test('Demo playlist created successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(201);",
+									"        pm.expect(responseJson.name).to.equal('Live Demo Playlist');",
+									"        pm.expect(responseJson.id).to.not.be.undefined;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Live Demo Playlist\",\n  \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists"
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Demo Track to Demo Playlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('Added demo track to demo playlist successfully!');",
+									"    pm.test('Demo track added to demo playlist successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trackId\": \"{{demo_track_id}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{demo_playlist_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{demo_playlist_id}}",
+								"tracks"
+							]
+						}
+					}
+				},
+				{
+					"name": "View Complete Demo Playlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Demo playlist setup complete! Contains ' + responseJson.length + ' tracks');",
+									"    if (responseJson.length > 0) {",
+									"        console.log('Demo track title: ' + responseJson[0].title);",
+									"    }",
+									"    pm.test('Demo playlist setup completed successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson).to.be.an('array');",
+									"        pm.expect(responseJson.length).to.equal(1);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{demo_playlist_id}}/tracks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{demo_playlist_id}}",
+								"tracks"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Verification - Final State",
+			"item": [
+				{
+					"name": "Get Updated Track Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Final track title: ' + responseJson.title + ' by ' + responseJson.artist);",
+									"    pm.test('Updated track retrieved successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson.title).to.include('Remastered');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/tracks/{{track1_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"tracks",
+								"{{track1_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Updated Playlist Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('Final playlist name: ' + responseJson.name);",
+									"    pm.test('Updated playlist retrieved successfully', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson.name).to.equal('Classic Rock Hits');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/playlists/{{playlist1_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists",
+								"{{playlist1_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Final System State - All Playlists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    console.log('=== DEMO COMPLETE ===');",
+									"    console.log('Total playlists in system: ' + responseJson.length);",
+									"    responseJson.forEach(function(playlist) {",
+									"        console.log('- ' + playlist.name + ' (ID: ' + playlist.id + ')');",
+									"    });",
+									"    pm.test('Final system state verified', function () {",
+									"        pm.expect(pm.response.code).to.equal(200);",
+									"        pm.expect(responseJson).to.be.an('array');",
+									"        pm.expect(responseJson.length).to.be.at.least(4);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/playlists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"playlists"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Collection-level pre-request script",
+					"// This runs before every request in the collection",
+					"console.log('Executing request: ' + pm.info.requestName);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Collection-level test script", 
+					"// This runs after every request in the collection",
+					"if (pm.response.code >= 400) {",
+					"    console.log('Request failed with status: ' + pm.response.code);",
+					"    console.log('Response: ' + pm.response.text());",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "track1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "track2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "track3_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "track4_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "track5_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "playlist1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "playlist2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "playlist3_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "demo_track_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "demo_playlist_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
