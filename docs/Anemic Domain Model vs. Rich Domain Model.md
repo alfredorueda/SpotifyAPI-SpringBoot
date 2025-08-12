@@ -102,11 +102,11 @@ Here, the withdrawal rules are enforced inside the entity itself, preventing ext
 | **Maintainability**        | Logic spread across multiple services | Logic localized to the entity          |
 | **Business Rules Enforcement** | External enforcement, risk of inconsistency | Self-enforced by the entity      |
 | **Testability**            | Requires service testing for most rules | Entities can be tested in isolation   |
-| **Industry Demand**        | Older enterprise style, common in legacy code | Increasingly preferred, matches job postings at companies like Citibank |
+| **Industry Demand**        | Older enterprise style, common in legacy code | Increasingly preferred, matches job postings |
 
 ---
 
-## 4. Why Industry (Including Citibank) Prefers DDD
+## 4. Why Industry Prefers DDD
 
 - Better communication with business stakeholders through ubiquitous language.
 - Reduced accidental complexity by keeping the model close to the business problem.
